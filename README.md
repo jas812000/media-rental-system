@@ -113,3 +113,15 @@ System behavior is validated using structured test scenarios documented in the a
 
 ## Notes
 This repository is intended as a portfolio artifact to demonstrate backend engineering fundamentals and disciplined system design. It is not positioned as a production-ready rental platform.
+
+--- 
+
+## License
+© 2025 James Stevens. All rights reserved.
+
+This source code is provided for educational, evaluation, and portfolio review purposes.
+Permission is granted to clone and run the code locally for non-commercial review.
+
+No permission is granted to copy, modify, redistribute, or use this code in
+commercial or production systems without explicit written consent from the author.
+
