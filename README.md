@@ -60,7 +60,6 @@ The system follows a layered, object-oriented architecture:
 
   ```text
   id,title,artist,year,isAvailable
-```
 
 This approach simulates backend persistence while keeping storage logic
 explicit, deterministic, and testable.
