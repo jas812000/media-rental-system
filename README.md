@@ -58,8 +58,7 @@ The system follows a layered, object-oriented architecture:
   - `MusicCD-<ID>.txt`
 - CSV-style structured text format per file:
 
-  ```text
-  id,title,artist,year,isAvailable
+  `id,title,artist,year,isAvailable`
 
 This approach simulates backend persistence while keeping storage logic
 explicit, deterministic, and testable.
