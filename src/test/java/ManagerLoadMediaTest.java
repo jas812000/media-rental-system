@@ -56,6 +56,116 @@ class ManagerLoadMediaTest {
         assertTrue(hasMusic);
     }
 
+    @Test
+    void loadMedia_parsesValidRecordWithoutWhitespace(@TempDir Path tempDir) throws IOException {
+    	Files.writeString(
+            	tempDir.resolve("MusicCD-OK01.txt"),
+            	"OK01,Album,Artist,1999,true"
+    	);
+    
+    	Manager manager = new Manager();
+    	manager.loadMedia(tempDir.toString());
+                
+    	assertEquals(1, manager.getMediaList().size());
+    	assertEquals(1999, manager.getMediaList().get(0).getYear());
+    }
+                
+    @Test   
+	void loadMedia_invalidYear_skipsMalformedFile(@TempDir Path tempDir) throws IOException {
+    	Files.writeString(
+            	tempDir.resolve("MusicCD-BAD01.txt"),
+            	"BAD01,Album,Artist,abcd,true"
+    	);
+
+    	Manager manager = new Manager();
+    	manager.loadMedia(tempDir.toString());
+
+    	// Invalid year should cause the file to be skipped
+    	assertEquals(0, manager.getMediaList().size());
+    }
+     
+    @Test
+    void loadMedia_missingFields_skipsMalformedFile(@TempDir Path tempDir) throws IOException {
+    	Files.writeString(
+            	tempDir.resolve("MusicCD-BAD02.txt"),
+            	"BAD02,AlbumOnly"
+    	);
+
+    	Manager manager = new Manager();
+    	manager.loadMedia(tempDir.toString());
+
+    	// Malformed record should be skipped
+    	assertEquals(0, manager.getMediaList().size());
+    }   
+        
+    @Test           
+    void loadMedia_emptyDirectory_loadsNothing(@TempDir Path tempDir) throws IOException {
+    	Manager manager = new Manager();
+    	manager.loadMedia(tempDir.toString());
+            
+    	assertEquals(0, manager.getMediaList().size());
+    } 
+
+    @Test
+    void rentMedia_availableItem_becomesUnavailable() {
+    	Media media = new MusicCD("ID1", "Album", "Artist", 2000, true);
+    	media.setIsAvail(false);
+
+    	assertFalse(media.getIsAvail());
+    }
+
+    @Test
+    void returnMedia_unavailableItem_becomesAvailable() {
+    	Media media = new MusicCD("ID2", "Album", "Artist", 2000, false);
+    	media.setIsAvail(true);
+
+    	assertTrue(media.getIsAvail());
+    }
+
+    @Test
+    void rentMedia_alreadyRented_remainsUnavailable() {
+    	Media media = new MovieDVD("ID3", "Movie", "Director", 2001, false);
+    	media.setIsAvail(false);
+
+    	assertFalse(media.getIsAvail());
+    }
+
+    @Test
+    void returnMedia_alreadyAvailable_remainsAvailable() {
+    	Media media = new eBook("ID4", "Book", "Author", 2002, true);
+    	media.setIsAvail(true);
+
+    	assertTrue(media.getIsAvail());
+    }
+
+    @Test
+    void loadMedia_calledTwice_doesNotDuplicate(@TempDir Path tempDir) throws IOException {
+    	Files.writeString(
+            	tempDir.resolve("MusicCD-ONCE.txt"),
+            	"ONCE,Album,Artist,1995,true"
+    	);
+
+    	Manager manager = new Manager();
+    	manager.loadMedia(tempDir.toString());
+    	manager.loadMedia(tempDir.toString());
+
+    	assertEquals(1, manager.getMediaList().size());
+    }
+
+    @Test
+    void loadMedia_multipleValidFiles_allLoaded(@TempDir Path tempDir) throws IOException {
+    	Files.writeString(tempDir.resolve("MusicCD-A.txt"),
+            	"A,Album,Artist,1990,true");
+    	Files.writeString(tempDir.resolve("MovieDVD-B.txt"),
+            	"B,Movie,Director,1991,true");
+    	Files.writeString(tempDir.resolve("eBook-C.txt"),
+            	"C,Book,Author,1992,true");
+
+    	Manager manager = new Manager();
+    	manager.loadMedia(tempDir.toString());
+
+    	assertEquals(3, manager.getMediaList().size());
+    }
 
 }
 

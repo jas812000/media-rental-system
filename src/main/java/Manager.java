@@ -63,53 +63,57 @@ public class Manager {
     // method to open or "load" all the files that contain the media
     protected void loadMedia(String directory) throws IOException {
 
-        if (mediaList.size() > 0) {																										// determines if there are any items in the list. if items are present,......
-            System.out.println(mediaList.size() + " media files have been loaded.");													// .....notifies user files have been loaded
+        if (mediaList.size() > 0) {								// determines if there are any items in the list. if items are present,......
+            System.out.println(mediaList.size() + " media files have been loaded.");		// .....notifies user files have been loaded
             return;
         }
         try {
-            this.directory = directory; 																								// object reference: refers to the instance the current constructor is creating
-            File dirPath = new File(directory);																							// creates a new file object
-            fileslist = dirPath.listFiles();  																							// creates an array (list) of abstract pathnames (files and directories)
+            this.directory = directory; 							// object reference: refers to the instance the current constructor is creating
+            File dirPath = new File(directory);							// creates a new file object
+            fileslist = dirPath.listFiles();  							// creates an array (list) of abstract pathnames (files and directories)
 
-            if (fileslist == null) {																									// determines if there are any items in the list. if items are not present,......
-                System.out.println("Could not load files");																				// ......notifies the user of absence
+            if (fileslist == null) {								// determines if there are any items in the list. if items are not present,......
+                System.out.println("Could not load files");					// ......notifies the user of absence
                 return;
             }
 
-            int count = 0;																										        // initialize the count variable for the counter
-            for (File file : fileslist) {																								// for each name (file) in the paths array (directory)
+            int count = 0;									// initialize the count variable for the counter
+            for (File file : fileslist) {							// for each name (file) in the paths array (directory)
 
-                Media med = null;																										// declaring variable for inputting the files
-                Scanner scan = new Scanner(file);																						// constructor to produce value from the file stream
-                String line = scan.nextLine();																							// moves the scanner past the current line and returns the input
+                Media med = null;								// declaring variable for inputting the files
+                Scanner scan = new Scanner(file);						// constructor to produce value from the file stream
+                String line = scan.nextLine();							// moves the scanner past the current line and returns the input
+		
+		try {	
+                    StringTokenizer st = new StringTokenizer(line,",");				// constructor to produce values, creating "tokens" from the string
+                    String id = st.nextToken().trim();						// assigns the second value of the of the string
+                    String title = st.nextToken().trim();					// assigns the first value of the of the string
+                    String artist = st.nextToken().trim();					// assigns the second value of the string                 
+		    int year = Integer.parseInt(st.nextToken().trim());				// assigns the third value of the of the string, parsing to integer
+                    boolean isAvail = Boolean.parseBoolean(st.nextToken().trim());		// converts the forth value to boolean
 
-                StringTokenizer st = new StringTokenizer(line,",");																		// constructor to produce values, creating "tokens" from the string
+                    if (file.getName().startsWith("eBook"))						// if the file name begins with "eBook", then......
+                    	med = new eBook(id, title, artist, year, isAvail);				//....assigned to eBook group.....
+                    else if (file.getName().startsWith("MovieDVD"))					// if the file name begins with "MovieDVD", then......
+                    	med = new MovieDVD(id, title, artist, year, isAvail); 			//....assigned to MovieDVD group.....
+                    else if (file.getName().startsWith("MusicCD"))					// if the file name begins with "MusicCD", then......
+                    	med = new MusicCD(id, title, artist, year, isAvail); 			//....it is assigned to MusicCD group.....
+		} catch (RuntimeException ex) {
+		    System.out.println("Skipping malformed file: " + file.getName());		
+		}
 
-                String id = st.nextToken().trim();																				// assigns the second value of the of the string
-                String title = st.nextToken().trim();																							// assigns the first value of the of the string
-                String artist = st.nextToken().trim();
-                int year = Integer.parseInt(st.nextToken().trim());																// assigns the third value of the of the string, parsing to integer
-                boolean isAvail = Boolean.parseBoolean(st.nextToken().trim());															// converts the forth value to boolean
-
-                if (file.getName().startsWith("eBook"))																					// if the file name begins with "eBook", then......
-                    med = new eBook(id, title, artist, year, isAvail);																	//....assigned to eBook group.....
-                if (file.getName().startsWith("MovieDVD"))																				// if the file name begins with "MovieDVD", then......
-                    med = new MovieDVD(id, title, artist, year, isAvail); 																//....assigned to MovieDVD group.....
-                if (file.getName().startsWith("MusicCD"))																				// if the file name begins with "MusicCD", then......
-                    med = new MusicCD(id, title, artist, year, isAvail); 																//....it is assigned to MusicCD group.....
-
-                mediaList.add(med);																										// ....then adds the item to the mediaList
-                count++;																												// counter enumerates how many files are added
-
+                if (med != null) {
+		    mediaList.add(med);																										
+                    count++;																											
+		}
             }
-            if (mediaList.size() > 0) {																									// determines if there are any items in the list. if items are present,......
-                System.out.println(count + " media files successfully loaded.");														// ......enumerates the files	and notifies user of successful loading of files
+            if (mediaList.size() > 0) {								// determines if there are any items in the list. if items are present,......
+                System.out.println(count + " media files successfully loaded.");		// ......enumerates the files	and notifies user of successful loading of files
                 System.out.println();
             }
 
         }catch(NoSuchElementException e){
-            System.out.println("Cannot locate the file(s)!");																			// error message; unable to locate the file
+            System.out.println("Cannot locate the file(s)!");					// error message; unable to locate the file
             e.printStackTrace();
         }catch(IllegalStateException e) {
             System.out.println("Scanner was closed. Please select a file.");															// error message; scanner was closed without selecting a file
