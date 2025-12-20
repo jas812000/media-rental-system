@@ -23,11 +23,11 @@ public class MediaRentalSystem {
 
     public static void main(String[] args) throws IOException, NoSuchElementException {
 
-        Manager man = new Manager();								// Instantiation of the Manager class
-	man.loadMedia();
-        int selection = 0;									// declaring variable for inputting the menu choice
-        Scanner scan = new Scanner(System.in);							// scanner to read input
-        //man.displayMenu();
+        Manager manager = new Manager();				// Instantiation of the Manager class
+	manager.loadMedia();
+        int selection = 0;						// declaring variable for inputting the menu choice
+        Scanner scan = new Scanner(System.in);				// scanner to read input
+        //manager.displayMenu();
         /*
          * The do-while statement will enter the loop automatically. The intent is to
          * display the menu after completion of the task in a selection. To exit the
@@ -39,35 +39,35 @@ public class MediaRentalSystem {
          */
 
         do {
-            man.displayMenu();									// calling method from Manager class to display menu
-            selection = scan.nextInt();								// accepts user input for menu selection, assigning it to "selection"
+            manager.displayMenu();					// calling method from Manager class to display menu
+            selection = scan.nextInt();					// accepts user input for menu selection, assigning it to "selection"
             try {
-                switch (selection) {								// the switch statement accepts input of selection
-                    case 1: 									// "Add Media Object": selecting will lead to the add media cascade				
-                        man.addMedia();								// calls the addMedia() method
+                switch (selection) {					// the switch statement accepts input of selection
+                    case 1: 						// "Add Media Object": selecting will lead to the add media cascade				
+                        manager.addMedia();				// calls the addMedia() method
                         break;
-                    case 2: 									// "Find Media Object": selecting will lead to the find media cascade
-                        man.findMedia();							// calls the findMedia() method
+                    case 2: 						// "Find Media Object": selecting will lead to the find media cascade
+                        manager.findMedia();				// calls the findMedia() method
                         break;
-                    case 3: 									// "Rent Media Object": selecting will lead to the rent media cascade
-                        man.rentMedia();							// calls the rentMedia() method
+                    case 3: 						// "Rent Media Object": selecting will lead to the rent media cascade
+                        manager.rentMedia();				// calls the rentMedia() method
                         break;
-                    case 4: 									// "Return Media Object": selecting will lead to the return media cascade
-                        man.returnMedia();							// calls the returnMedia() method
+                    case 4: 						// "Return Media Object": selecting will lead to the return media cascade
+                        manager.returnMedia();				// calls the returnMedia() method
                         break;
                     case 9: 									// Exits the program
                         System.out.print("Thank you for using the program. Goodbye!!!"); 	// message notifying user of exiting program
-                        System.exit(0);														// method that exits current program by terminating Java virtual machine
+                        System.exit(0);								// method that exits current program by terminating Java virtual machine
                         break;
                     default:
-                        System.out.println("Please enter a valid menu choice.");			// notifies user of invalid option
+                        System.out.println("Please enter a valid menu choice.");		// notifies user of invalid option
                         break;
                 }
                 System.out.println();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }while (selection != 9);  															// condition to exit the program
+        }while (selection != 9);  								// condition to exit the program
 
     }
 }
