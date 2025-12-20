@@ -57,15 +57,10 @@ The system follows a layered, object-oriented architecture:
   - `MovieDVD-<ID>.txt`
   - `MusicCD-<ID>.txt`
 - CSV-style structured text format per file:
-id,title,artist,year,isAvailable
 
-
-
-
-
-
-
-
+  ```text
+  id,title,artist,year,isAvailable
+```
 
 This approach simulates backend persistence while keeping storage logic
 explicit, deterministic, and testable.
