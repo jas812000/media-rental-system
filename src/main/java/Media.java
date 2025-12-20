@@ -1,5 +1,4 @@
 /*
- * CMIS 242 7380
  *
  * Version 1.0
  *
@@ -12,10 +11,6 @@
  * available. The files are initially uploaded before all options can be utilized.
  *
  */
-
-
-//package Media_Rental_System;
-
 public class Media {
 
     // instance variables (attributes) that will be inherited
@@ -96,6 +91,10 @@ public class Media {
     protected void setRentFee(double rentFee) {
         this.rentFee = rentFee;
     }
+
+    public String getPublicId() { return getId(); }
+    public int getPublicYear() { return getYear(); }
+    public boolean isAvailable() { return getIsAvail(); }
 
     // method to display results
     public String toString() {
