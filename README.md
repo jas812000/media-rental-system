@@ -14,7 +14,7 @@ and easy to test.
 ---
 
 ## Features
-- Media catalog loading from a structured directory
+- Automatic loading of media catalog at application startup
 - Media search by ID, title, or artist
 - Rent and return workflows with availability enforcement
 - Support for multiple media types using inheritance-based specialization
@@ -60,6 +60,7 @@ The system follows a layered, object-oriented architecture:
 
   `id,title,artist,year,isAvailable`
 
+
 This approach simulates backend persistence while keeping storage logic
 explicit, deterministic, and testable.
 
@@ -91,13 +92,9 @@ Failures are explicit, traceable, and suitable for automated testing.
 
 ## Build & Test
 
----
-
 ### Prerequisites
 - Java 17+
 - Maven 3.8+
-
----
 
 ### Run tests
 ```bash
@@ -108,17 +105,24 @@ mvn clean test
 
 ## Run (CLI)
 
-This project primarily focuses on backend logic and automated testing.  
-The CLI entry point is intentionally minimal.
+The media catalog is automatically loaded from the ./data directory at
+application startup. No manual configuration or input is required.
 
 ```bash
-mvn -q exec:java -Dexec.args="./data"
+mvn -q exec:java
 ```
+
+The CLI menu provides options to:
+
+Add individual media items
+- Search for media
+- Rent media
+- Return media
 
 ---
 
 ## Tools & Technologies
-- **Language:** Java 17
+- **Language:** Java 21
 - **Build Tool:** Maven
 - **Testing:** JUnit 5
 - **Modeling:** UML
@@ -144,14 +148,6 @@ This project is licensed under the MIT License.
 See the [LICENSE](LICENSE) file for details.
 
 ---
-
-
-
-
-
-
-
-
 
 
 
