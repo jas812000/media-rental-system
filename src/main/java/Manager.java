@@ -13,7 +13,6 @@
  */
 
 
-//package Media_Rental_System;
 
 import java.io.*;
 import java.util.*;
@@ -52,18 +51,23 @@ public class Manager {
         System.out.print("Enter your selection: ");
     }
 
-    // method to open or "load" all the files that contain the media
+
+    public java.util.ArrayList<Media> getMediaList() {
+    	return mediaList;   
+    }
+
     protected void loadMedia() throws IOException {
+    	loadMedia("./data");
+    	}
+
+    // method to open or "load" all the files that contain the media
+    protected void loadMedia(String directory) throws IOException {
 
         if (mediaList.size() > 0) {																										// determines if there are any items in the list. if items are present,......
             System.out.println(mediaList.size() + " media files have been loaded.");													// .....notifies user files have been loaded
             return;
         }
         try {
-            Scanner scanDir = new Scanner(System.in);																					// constructor to produce value from the input stream
-            System.out.println("Enter directory location: ");																			// request user to enter directory location or select directory
-
-            String directory = "./data"; 																						
             this.directory = directory; 																								// object reference: refers to the instance the current constructor is creating
             File dirPath = new File(directory);																							// creates a new file object
             fileslist = dirPath.listFiles();  																							// creates an array (list) of abstract pathnames (files and directories)
@@ -72,6 +76,7 @@ public class Manager {
                 System.out.println("Could not load files");																				// ......notifies the user of absence
                 return;
             }
+
             int count = 0;																										        // initialize the count variable for the counter
             for (File file : fileslist) {																								// for each name (file) in the paths array (directory)
 
@@ -80,6 +85,7 @@ public class Manager {
                 String line = scan.nextLine();																							// moves the scanner past the current line and returns the input
 
                 StringTokenizer st = new StringTokenizer(line,",");																		// constructor to produce values, creating "tokens" from the string
+
                 String id = st.nextToken().trim();																				// assigns the second value of the of the string
                 String title = st.nextToken().trim();																							// assigns the first value of the of the string
                 String artist = st.nextToken().trim();
@@ -92,6 +98,7 @@ public class Manager {
                     med = new MovieDVD(id, title, artist, year, isAvail); 																//....assigned to MovieDVD group.....
                 if (file.getName().startsWith("MusicCD"))																				// if the file name begins with "MusicCD", then......
                     med = new MusicCD(id, title, artist, year, isAvail); 																//....it is assigned to MusicCD group.....
+
                 mediaList.add(med);																										// ....then adds the item to the mediaList
                 count++;																												// counter enumerates how many files are added
 
