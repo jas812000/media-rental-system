@@ -114,7 +114,7 @@ mvn -q exec:java
 
 The CLI menu provides options to:
 
-Add individual media items
+- Add individual media items
 - Search for media
 - Rent media
 - Return media
