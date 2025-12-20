@@ -1,5 +1,4 @@
 /*
- * CMIS 242 7380
  *
  * Version 1.0
  *
@@ -35,11 +34,10 @@ public class Manager {
     public void displayMenu() {
         System.out.println("Welcome to the Media Rental System");
         System.out.println();
-        System.out.println("1: Load Media Objects");
-        System.out.println("2: Add Individual Media Object");
-        System.out.println("3: Find Media Object");
-        System.out.println("4: Rent Media Object");
-        System.out.println("5: Return Media Object");
+        System.out.println("1: Add Individual Media Object");
+        System.out.println("2: Find Media Object");
+        System.out.println("3: Rent Media Object");
+        System.out.println("4: Return Media Object");
         System.out.println("9: Quit");
         System.out.println();
         System.out.println("Enter your selection: ");
@@ -65,7 +63,7 @@ public class Manager {
             Scanner scanDir = new Scanner(System.in);																					// constructor to produce value from the input stream
             System.out.println("Enter directory location: ");																			// request user to enter directory location or select directory
 
-            String directory = scanDir.nextLine(); 																						// moves the scanner past the current line and returns the input assigned to object catalog
+            String directory = "./data"; 																						
             this.directory = directory; 																								// object reference: refers to the instance the current constructor is creating
             File dirPath = new File(directory);																							// creates a new file object
             fileslist = dirPath.listFiles();  																							// creates an array (list) of abstract pathnames (files and directories)
@@ -82,12 +80,11 @@ public class Manager {
                 String line = scan.nextLine();																							// moves the scanner past the current line and returns the input
 
                 StringTokenizer st = new StringTokenizer(line,",");																		// constructor to produce values, creating "tokens" from the string
-                String id = st.nextToken();																								// assigns the second value of the of the string
-                String title = st.nextToken();																							// assigns the first value of the of the string
-                String artist = st.nextToken();
-                int year = Integer.parseInt(st.nextToken());																			// assigns the third value of the of the string, parsing to integer
-                String sAvail = st.nextToken();																							// assigns the forth value of the of the string
-                boolean isAvail = (sAvail.equals("true") ? true : false);																// converts the forth value to boolean
+                String id = st.nextToken().trim();																				// assigns the second value of the of the string
+                String title = st.nextToken().trim();																							// assigns the first value of the of the string
+                String artist = st.nextToken().trim();
+                int year = Integer.parseInt(st.nextToken().trim());																// assigns the third value of the of the string, parsing to integer
+                boolean isAvail = Boolean.parseBoolean(st.nextToken().trim());															// converts the forth value to boolean
 
                 if (file.getName().startsWith("eBook"))																					// if the file name begins with "eBook", then......
                     med = new eBook(id, title, artist, year, isAvail);																	//....assigned to eBook group.....
