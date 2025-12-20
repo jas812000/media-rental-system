@@ -14,13 +14,14 @@ and easy to test.
 ---
 
 ## Features
-- Automatic loading of media catalog at application startup
+- Automatic loading of the media catalog at application startup
 - Media search by ID, title, or artist
 - Rent and return workflows with availability enforcement
 - Support for multiple media types using inheritance-based specialization
-- Structured file-based persistence with deterministic loading and saving
-- Centralized orchestration via a manager/service layer
-- Explicit validation and controlled state transitions
+- Structured file-based persistence with deterministic loading
+- Centralized manager/service layer coordinating domain logic
+- Defensive parsing and graceful handling of malformed input
+- Comprehensive JUnit test coverage for loading and state behavior
 
 ---
 
@@ -36,7 +37,7 @@ The system follows a layered, object-oriented architecture:
     identification, descriptive metadata, and availability state.
 
 - **Concrete Media Types**
-  - `Ebook`
+  - `eBook`
   - `MovieDVD`
   - `MusicCD`
 
@@ -44,8 +45,9 @@ The system follows a layered, object-oriented architecture:
   - Structured text files with one file per media item.
 
 - **Validation & Error Handling**
-  - Guarded operations enforcing availability rules,
-    input correctness, and file I/O integrity.
+  - Explicit validation of parsed input
+  - Graceful skipping of malformed media files
+  - Controlled state transitions for rental operations
 
 ---
 
@@ -72,21 +74,21 @@ Media items follow a controlled availability lifecycle:
 - `AVAILABLE → RENTED`
 - `RENTED → AVAILABLE`
 
-Invalid transitions (e.g., renting an unavailable item or returning an item
-that is not rented) are explicitly blocked through domain logic to preserve
+Invalid state transitions (e.g., renting an unavailable item or returning
+an item that is already available) are explicitly blocked to preserve
 system consistency.
 
 ---
 
 ## Error Handling Strategy
-The system enforces correctness through explicit validation and guarded
+The system enforces correctness through defensive parsing and guarded
 operations, including:
-- Invalid or malformed file data detection
-- Missing or duplicate media records
-- Illegal availability state transitions
-- Load/save failures during file I/O
+- Detection and skipping of malformed media records
+- Validation of numeric and boolean fields
+- Prevention of invalid rental state transitions
+- Explicit handling of file I/O failures
 
-Failures are explicit, traceable, and suitable for automated testing.
+Malformed files do not terminate the load process and are safely ignored.
 
 ---
 
@@ -98,15 +100,16 @@ Failures are explicit, traceable, and suitable for automated testing.
 
 ### Run tests
 ```bash
-mvn clean test
+mvn test
 ```
-
+  
 ---
+
 
 ## Run (CLI)
 
 The media catalog is automatically loaded from the ./data directory at
-application startup. No manual configuration or input is required.
+application startup. No manual loading or configuration is required.
 
 ```bash
 mvn -q exec:java
@@ -127,28 +130,26 @@ The CLI menu provides options to:
 - **Testing:** JUnit 5
 - **Modeling:** UML
 - **Persistence:** Structured text files
-- **Design Artifacts:** Class diagrams, structured domain models
-
+- **Testing Techniques:** Unit tests and filesystem-based integration tests
+   
 ---
-
+   
 ## Purpose
 This project serves as a backend engineering case study demonstrating:
 - Object-oriented system design
 - Inheritance-based domain modeling
 - Deterministic persistence strategies
+- Defensive input validation
 - Controlled state transitions
-- Validation-driven business logic
-- Automated testing practices
-- Translation of conceptual design into maintainable Java code
+- Automated testing and regression prevention
+- Translation of backend design concepts into working Java code
 
 ---
 
 ## License
-This project is licensed under the MIT License.  
+This project is licensed under the MIT License.
 See the [LICENSE](LICENSE) file for details.
 
 ---
-
-
 
 
