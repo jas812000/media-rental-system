@@ -24,6 +24,7 @@ public class MediaRentalSystem {
     public static void main(String[] args) throws IOException, NoSuchElementException {
 
         Manager man = new Manager();								// Instantiation of the Manager class
+	man.loadMedia();
         int selection = 0;									// declaring variable for inputting the menu choice
         Scanner scan = new Scanner(System.in);							// scanner to read input
         //man.displayMenu();
