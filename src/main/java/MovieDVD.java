@@ -1,42 +1,45 @@
-/*
- * CMIS 242 7380
+/**
+ * Represents a movie stored on DVD media.
  *
- * Version 1.0
- *
- * 14 December 2022
- *
- * © 2022, James Stevens, All rights reserved.
- *
- * This program, Media Rental System, gives the user the ability to rent media items (eBook, MovieDVD, MusicCD). The user can
- * search for items by ID, title or artist. The user can also rent the media item. The function to return the item is also
- * available. The files are initially uploaded before all options can be utilized.
- *
+ * <p>A MovieDVD is a type of Media with a fixed daily rental fee.
+ * This class initializes the rental fee upon construction and
+ * provides a formatted string representation of the movie.</p>
  */
-
-
-//package Media_Rental_System;
-
 public class MovieDVD extends Media {
 
-    // constant variable establishing rental fee
-    private final double MOVIE_DVD_FEE = 6.99; 														// rental fee per day
+    /*
+     * Instance variables specific to MovieDVD:
+     * MOVIE_DVD_FEE - daily rental fee for movie DVDs
+     */
+    private static final double MOVIE_DVD_FEE = 6.99;
 
-    // constructor to initialize the objects; this calls parent/superclass (Media) constructor)
-    protected MovieDVD (String id, String title, String artist, int year, boolean bool) {
-        super (id, title, artist, year, bool);														// refers to parent (superclass) methods and constructors
-        setRentFee(MOVIE_DVD_FEE);																	// sets the rent fee with the constructor
+    /**
+     * Constructs a MovieDVD object with the specified attributes.
+     *
+     * @param id     unique alphanumeric identifier
+     * @param title  title of the movie
+     * @param artist director or primary actor
+     * @param year   year of release
+     * @param bool   availability status
+     */
+    protected MovieDVD(String id, String title, String artist, int year, boolean bool) {
+        super(id, title, artist, year, bool);
+        setRentFee(MOVIE_DVD_FEE);
     }
 
-    // method to display results
+    /**
+     * Returns a formatted string representation of the movie DVD.
+     *
+     * @return string describing the movie DVD
+     */
     @Override
     public String toString() {
-        String strdisplay = "Movie (DVD) [ ";
-        strdisplay += "id: " + getId() + ", ";
-        strdisplay += "Title: " + getTitle() + ", ";
-        strdisplay += "Actor: " + getArtist() + ", ";
-        strdisplay += "Year: " + getYear() + ", ";
-        strdisplay += "Availability: " + getIsAvail() + ".";
-        strdisplay += " ]";
-        return strdisplay;
+        return "Movie (DVD) [ " +
+                "id: " + getId() + ", " +
+                "Title: " + getTitle() + ", " +
+                "Actor: " + getArtist() + ", " +
+                "Year: " + getYear() + ", " +
+                "Availability: " + getIsAvail() +
+                " ]";
     }
 }
