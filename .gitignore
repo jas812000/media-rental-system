@@ -1,21 +1,4 @@
-# Maven
 target/
-*.log
-
-# IntelliJ / JetBrains
 .idea/
 *.iml
-*.ipr
-*.iws
-out/
-
-# macOS
 .DS_Store
-
-# VS Code (optional)
-.vscode/
-
-# OS / temp
-*.swp
-*~
-*.save

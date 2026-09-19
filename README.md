@@ -1,155 +1,274 @@
 # Media Rental System
 
 ## Overview
-The Media Rental System is a modular Java backend designed to manage a catalog
-of rentable media items across multiple media types, including ebooks,
-movie DVDs, and music CDs.
 
-The project focuses on backend domain modeling, validation, persistence,
-and automated testing rather than UI concerns. All data is persisted using
-a structured file-based storage model instead of a database, allowing the
-system to simulate real backend responsibilities while remaining portable
-and easy to test.
+The Media Rental System is a Java command-line application for managing a
+catalog of eBooks, movie DVDs, and music CDs.
+
+The application demonstrates object-oriented domain modeling, validation,
+file-based persistence, searching, sorting, rental state management, and
+automated testing. Media records are stored as structured text files,
+allowing persistence behavior to remain explicit and easy to inspect.
 
 ---
 
 ## Features
-- Automatic loading of the media catalog at application startup
-- Media search by ID, title, or artist
-- Rent and return workflows with availability enforcement
-- Support for multiple media types using inheritance-based specialization
-- Structured file-based persistence with deterministic loading
-- Centralized manager/service layer coordinating domain logic
-- Defensive parsing and graceful handling of malformed input
-- Comprehensive JUnit test coverage for loading and state behavior
+
+- Add eBooks, movie DVDs, and music CDs
+- Search media by ID, title, or creator
+- Rent and return media with availability enforcement
+- Browse media by type and availability
+- Sort browse results by ID, title, or year
+- Case-insensitive ID lookup
+- Input normalization for newly added media
+- Validation of IDs, text fields, and release years
+- File-based persistence of catalog and availability changes
+- Graceful handling of malformed persisted records
+- Rollback of in-memory availability when persistence fails
+- Automated testing of domain, CLI, validation, and persistence behavior
 
 ---
 
-## Architecture Overview
-The system follows a layered, object-oriented architecture:
+## Application Structure
 
-- **Manager / Service Layer**
-  - Central controller coordinating media loading, searching,
-    rental operations, validation, and persistence.
+The application uses an object-oriented design centered around a shared
+`Media` base class and specialized media types.
 
-- **Media (Abstract Base Class)**
-  - Encapsulates shared media attributes and behavior, including
-    identification, descriptive metadata, and availability state.
+### Media
 
-- **Concrete Media Types**
-  - `eBook`
-  - `MovieDVD`
-  - `MusicCD`
+`Media` contains the attributes shared by all media items:
 
-- **Persistence Layer**
-  - Structured text files with one file per media item.
+- ID
+- Title
+- Creator
+- Release year
+- Rental fee
+- Availability
 
-- **Validation & Error Handling**
-  - Explicit validation of parsed input
-  - Graceful skipping of malformed media files
-  - Controlled state transitions for rental operations
+### Media Types
 
----
+The application supports three concrete media types:
 
-## Data Persistence Model
-- One directory represents a media catalog
-- One file per media item
-- Filename prefix determines media type:
-  - `eBook-<ID>.txt`
-  - `MovieDVD-<ID>.txt`
-  - `MusicCD-<ID>.txt`
-- CSV-style structured text format per file:
+- `EBook`
+- `MovieDVD`
+- `MusicCD`
 
-  `id,title,artist,year,isAvailable`
+Each type provides its own rental fee and creator information. Movie DVDs
+also store a director separately from the primary actor.
 
+### Manager
 
-This approach simulates backend persistence while keeping storage logic
-explicit, deterministic, and testable.
+`Manager` coordinates the application's main operations:
 
----
+- Loading persisted media
+- Adding media
+- Searching
+- Renting
+- Returning
+- Browsing and sorting
+- Validation
+- Persistence
 
-## Media State Management
-Media items follow a controlled availability lifecycle:
+### MediaRentalSystem
 
-- `AVAILABLE → RENTED`
-- `RENTED → AVAILABLE`
-
-Invalid state transitions (e.g., renting an unavailable item or returning
-an item that is already available) are explicitly blocked to preserve
-system consistency.
+`MediaRentalSystem` provides the command-line entry point and main menu.
 
 ---
 
-## Error Handling Strategy
-The system enforces correctness through defensive parsing and guarded
-operations, including:
-- Detection and skipping of malformed media records
-- Validation of numeric and boolean fields
-- Prevention of invalid rental state transitions
-- Explicit handling of file I/O failures
+## Persistence
 
-Malformed files do not terminate the load process and are safely ignored.
+Media records are stored in the `data` directory using one text file per
+media item.
+
+Filenames identify the media type and ID:
+
+```text
+eBook-<ID>.txt
+MovieDVD-<ID>.txt
+MusicCD-<ID>.txt
+```
+
+eBooks and music CDs use five persisted fields:
+
+```text
+id,title,creator,year,availability
+```
+
+Movie DVDs use six fields so the actor and director are stored separately:
+
+```text
+id,title,actor,year,director,availability
+```
+
+Persisted records are validated when loaded. Malformed records are skipped
+without preventing valid media from loading.
 
 ---
 
-## Build & Test
+## Validation and Normalization
+
+New media entries are validated before being persisted.
+
+The application enforces:
+
+- Exactly six alphanumeric characters for media IDs
+- Unique media IDs
+- Nonblank titles and creator names
+- No commas in text fields because persistence uses an unquoted
+  comma-delimited format
+- Release years from `1000` through the current year
+- Strict persisted boolean values for availability
+- Matching persisted IDs and filenames
+
+Newly entered IDs are normalized to uppercase. New text values are trimmed,
+repeated internal spaces are collapsed, and capitalization is normalized
+before persistence.
+
+Existing persisted records are loaded without rewriting their descriptive
+text.
+
+---
+
+## Rental State Management
+
+Media items have two availability states:
+
+```text
+AVAILABLE -> RENTED
+RENTED -> AVAILABLE
+```
+
+The application prevents invalid transitions, including:
+
+- Renting an unavailable item
+- Returning an item that is already available
+
+Availability changes are persisted to the corresponding media file. If the
+persistence operation fails, the in-memory state is rolled back so the
+catalog remains consistent.
+
+---
+
+## Command-Line Interface
+
+The main menu provides five workflows:
+
+```text
+1: Add Media
+2: Find Media
+3: Rent Media
+4: Return Media
+5: Browse Media
+9: Quit
+```
+
+### Add Media
+
+Creates and persists a new eBook, movie DVD, or music CD after validating
+and normalizing the supplied information.
+
+### Find Media
+
+Searches the catalog by:
+
+- Title
+- ID
+- Creator
+
+Creator searches include authors, performers, actors, and movie directors.
+
+### Rent Media
+
+Locates an available media item, confirms the rental, updates its
+availability, persists the change, and displays the rental fee.
+
+### Return Media
+
+Locates a rented media item, confirms the return, and persists the updated
+availability.
+
+### Browse Media
+
+Filters the catalog by media type and availability and supports ascending
+or descending sorting.
+
+---
+
+## Build and Test
 
 ### Prerequisites
-- Java 17+
-- Maven 3.8+
 
-### Run tests
-```bash
-mvn test
-```
-  
----
+- Java 21
+- Maven 3.8 or later
 
-
-## Run (CLI)
-
-The media catalog is automatically loaded from the ./data directory at
-application startup. No manual loading or configuration is required.
+### Run the automated tests
 
 ```bash
-mvn -q exec:java
+mvn clean test
 ```
 
-The CLI menu provides options to:
+The project currently contains **54 JUnit 5 tests** covering loading,
+validation, normalization, searching, adding, renting, returning, browsing,
+sorting, persistence, rollback behavior, and command-line output.
 
-- Add individual media items
-- Search for media
-- Rent media
-- Return media
+### Build the executable JAR
+
+```bash
+mvn clean package
+```
+
+The packaged application is created at:
+
+```text
+target/media-rental-system-1.0.0.jar
+```
+
+### Run the application
+
+From the repository root:
+
+```bash
+java -jar target/media-rental-system-1.0.0.jar
+```
+
+The application automatically loads its catalog from the `data` directory
+at startup.
 
 ---
 
-## Tools & Technologies
-- **Language:** Java 21
-- **Build Tool:** Maven
-- **Testing:** JUnit 5
-- **Modeling:** UML
-- **Persistence:** Structured text files
-- **Testing Techniques:** Unit tests and filesystem-based integration tests
-   
+## Tools and Technologies
+
+- Java 21
+- Maven
+- JUnit 5
+- Java NIO file APIs
+- Object-oriented programming
+- File-based persistence
+- Command-line interface
+
 ---
-   
-## Purpose
-This project serves as a backend engineering case study demonstrating:
-- Object-oriented system design
-- Inheritance-based domain modeling
-- Deterministic persistence strategies
+
+## What This Project Demonstrates
+
+This project demonstrates practical Java software engineering concepts,
+including:
+
+- Object-oriented design and inheritance
+- Domain modeling
+- Separation of application and domain responsibilities
 - Defensive input validation
-- Controlled state transitions
-- Automated testing and regression prevention
-- Translation of backend design concepts into working Java code
+- Input normalization
+- File parsing and persistence
+- State-transition enforcement
+- Failure recovery and state rollback
+- Searching, filtering, and sorting
+- Automated regression testing
+- Filesystem-based integration testing
+- Maven build and packaging workflows
 
 ---
 
 ## License
-This project is licensed under the MIT License.
-See the [LICENSE](LICENSE) file for details.
 
----
-
-
+This project is licensed under the MIT License. See the
+[LICENSE](LICENSE) file for details.
