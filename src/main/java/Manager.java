@@ -15,11 +15,10 @@ public class Manager {
      * Instance variables used by the Manager:
      * mediaList - collection of all loaded media objects
      * directory - directory path used for loading and storing media files
-     * fileslist - array of files found in the media directory
+     * directory - directory path used for loading and storing media files
      */
     private final ArrayList<Media> mediaList;
     private String directory;
-    private File[] fileslist;
 
     /**
      * Constructs a Manager object and initializes the media list.
@@ -101,16 +100,16 @@ public class Manager {
         this.directory = directory;
 
         File dirPath = new File(directory);
-        fileslist = dirPath.listFiles(); // assign to instance field
+        File[] files = dirPath.listFiles();
 
-        if (fileslist == null) {
+        if (files == null) {
             System.out.println("Could not load files. Check that the directory exists: " + directory);
             return;
         }
 
         int count = 0;
 
-        for (File file : fileslist) {
+        for (File file : files) {
 
             Media med;
 
@@ -337,16 +336,13 @@ public class Manager {
         System.out.println("Enter the media ID: ");
         String idInput = scan.nextLine().trim();
 
-        MediaSearchResult result = findMediaById(idInput);
-        if (result == null) {
+        Media selected = findMediaById(idInput);
+        if (selected == null) {
             System.out.println("No media item found with ID: " + idInput);
             return;
         }
 
-        Media selected = result.media;
-        int selectedIndex = result.index;
-
-        if (!selected.getIsAvail()) {
+         if (!selected.getIsAvail()) {
             System.out.println("Media selected is not available for rental. Please select another item.");
             return;
         }
@@ -366,7 +362,7 @@ public class Manager {
                 System.out.println("\tItem successfully rented. Rental fee is " + selected.getRentFee() + ".");
 
                 try {
-                    saveMediaToFile(selected, selectedIndex);
+                    saveMediaToFile(selected);
                     System.out.println("File(s) stored successfully!");
                 } catch (IOException e) {
                     System.out.println("Warning: Rental succeeded but file could not be updated.");
@@ -401,16 +397,13 @@ public class Manager {
         System.out.println("Enter the media ID: ");
         String idInput = scan.nextLine().trim();
 
-        MediaSearchResult result = findMediaById(idInput);
-        if (result == null) {
+        Media selected = findMediaById(idInput);
+        if (selected == null) {
             System.out.println("No media item found with ID: " + idInput);
             return;
         }
 
-        Media selected = result.media;
-        int selectedIndex = result.index;
-
-        if (selected.getIsAvail()) {
+         if (selected.getIsAvail()) {
             System.out.println("This item is already available. Nothing to return.");
             return;
         }
@@ -430,7 +423,7 @@ public class Manager {
                 System.out.println("\tItem successfully returned.");
 
                 try {
-                    saveMediaToFile(selected, selectedIndex);
+                    saveMediaToFile(selected);
                     System.out.println("File(s) stored successfully!");
                 } catch (IOException e) {
                     System.out.println("Warning: Return succeeded but file could not be updated.");
@@ -572,23 +565,33 @@ public class Manager {
     }
 
     /**
-     * Writes the given media object's current state back to its backing file.
+     * Writes the current state of a media item to its backing file.
      *
-     * @param media the media object to persist
-     * @param index index into the fileslist array that corresponds to the media file
-     * @throws IOException if writing fails
+     * <p>The backing filename is derived from the media type and ID rather
+     * than from a directory-list index. This keeps persistence associated
+     * with the correct media item even when malformed or unrelated files
+     * are present in the data directory.</p>
+     *
+     * @param media media object to persist
+     * @throws IOException if the data directory is unavailable or writing fails
      */
-    private void saveMediaToFile(Media media, int index) throws IOException {
-        if (fileslist == null) {
-            throw new IOException("File list is not available. Did you call loadMedia()?");
-        }
-        if (index < 0 || index >= fileslist.length) {
-            throw new IOException("Invalid file index: " + index);
+    private void saveMediaToFile(Media media) throws IOException {
+        if (directory == null || directory.isBlank()) {
+            throw new IOException("Media directory is not available. Did you call loadMedia()?");
         }
 
-        try (FileOutputStream fs = new FileOutputStream(fileslist[index]);
+        String filePrefix = switch (media) {
+            case eBook ignored -> "eBook";
+            case MovieDVD ignored -> "MovieDVD";
+            case MusicCD ignored -> "MusicCD";
+            default -> throw new IOException(
+                    "Unsupported media type: " + media.getClass().getSimpleName());
+        };
+
+        File mediaFile = new File(directory, filePrefix + "-" + media.getId() + ".txt");
+
+        try (FileOutputStream fs = new FileOutputStream(mediaFile);
              PrintWriter outFS = new PrintWriter(fs)) {
-
             outFS.print(media.getId() + "," +
                     media.getTitle() + "," +
                     media.getArtist() + "," +
@@ -596,33 +599,21 @@ public class Manager {
                     media.getIsAvail());
         }
     }
+
     /**
-     * Finds a media item by its ID.
+     * Finds a media item by its exact ID.
      *
      * @param id media ID to search for
-     * @return an array containing the media item and its index, or null if not found
+     * @return matching media item, or {@code null} if no item matches
      */
-    private MediaSearchResult findMediaById(String id) {
-        for (int i = 0; i < mediaList.size(); i++) {
-            String currentId = mediaList.get(i).getId();
-            if (currentId != null && currentId.equals(id)) {
-                return new MediaSearchResult(mediaList.get(i), i);
+    private Media findMediaById(String id) {
+        for (Media media : mediaList) {
+            if (media.getId() != null && media.getId().equals(id)) {
+                return media;
             }
         }
+
         return null;
-    }
-
-    /**
-     * Holds the result of a media search operation.
-     */
-    private static class MediaSearchResult {
-        Media media;
-        int index;
-
-        MediaSearchResult(Media media, int index) {
-            this.media = media;
-            this.index = index;
-        }
     }
 
     /**
