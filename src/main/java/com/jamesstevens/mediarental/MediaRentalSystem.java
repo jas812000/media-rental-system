@@ -53,7 +53,7 @@ public final class MediaRentalSystem {
                 case 4 -> manager.returnMedia(scan);
                 case 5 -> manager.listMedia(scan);
                 case 9 -> {
-                    System.out.println("Thank you for using the program. Goodbye!");
+                    System.out.println("Thanks for using the Media Rental System!");
                     return;
                 }
                 default -> System.out.println("Please enter a valid menu choice.");

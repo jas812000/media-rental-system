@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -289,7 +288,7 @@ class ManagerTest {
         String output = capture(() -> manager.addMedia(scanner(
                 "1", "NEW001", "New Book", "New Author", "2020")));
 
-        assertTrue(output.contains("Media added and stored successfully."));
+        assertTrue(output.contains("Media Added:"));
         assertEquals(1, manager.getMediaList().size());
 
         Path file = tempDir.resolve("eBook-NEW001.txt");
@@ -380,7 +379,7 @@ class ManagerTest {
 
         String output = capture(() -> manager.addMedia(scanner("9")));
 
-        assertTrue(output.contains("Invalid media type selection."));
+        assertTrue(output.contains("Please select a media type from the menu."));
         assertTrue(manager.getMediaList().isEmpty());
     }
 
@@ -396,7 +395,7 @@ class ManagerTest {
 
         String output = capture(() -> manager.addMedia(scanner("abc")));
 
-        assertTrue(output.contains("Invalid media type selection."));
+        assertTrue(output.contains("Please select a media type from the menu."));
         assertTrue(manager.getMediaList().isEmpty());
     }
 
@@ -412,7 +411,7 @@ class ManagerTest {
 
         String output = capture(() -> manager.addMedia(scanner("1", "BAD!")));
 
-        assertTrue(output.contains("Invalid ID"));
+        assertTrue(output.contains("Please enter a valid 6-character media ID using letters and numbers only."));
         assertTrue(manager.getMediaList().isEmpty());
     }
 
@@ -429,7 +428,7 @@ class ManagerTest {
         String output = capture(() -> manager.addMedia(scanner(
                 "1", "BOOK01", "Book", "Author", "abcd")));
 
-        assertTrue(output.contains("Invalid year"));
+        assertTrue(output.contains("Please enter a valid release year between 1000 and "));
         assertTrue(manager.getMediaList().isEmpty());
     }
 
@@ -447,7 +446,7 @@ class ManagerTest {
         String output = capture(() -> manager.addMedia(scanner(
                 "3", "MUS001", "Album, Deluxe", "Artist", "2020")));
 
-        assertTrue(output.contains("cannot be blank or contain commas"));
+        assertTrue(output.contains("Please enter a title without commas."));
         assertTrue(manager.getMediaList().isEmpty());
     }
 
@@ -504,7 +503,7 @@ class ManagerTest {
                 "SHOULD_NOT_BE_READ",
                 "2022")));
 
-        assertTrue(output.contains("Title cannot be blank or contain commas."));
+        assertTrue(output.contains("Please enter a title without commas."));
         assertFalse(output.contains("performer name"));
         assertFalse(output.contains("year of release"));
         assertTrue(manager.getMediaList().isEmpty());
@@ -528,7 +527,7 @@ class ManagerTest {
                 "Bad, Author",
                 "2024")));
 
-        assertTrue(output.contains("Author cannot be blank or contain commas."));
+        assertTrue(output.contains("Please enter an author name without commas."));
         assertFalse(output.contains("year of release"));
         assertTrue(manager.getMediaList().isEmpty());
     }
@@ -551,7 +550,7 @@ class ManagerTest {
                 "2023",
                 "Bad, Director")));
 
-        assertTrue(output.contains("Director cannot be blank or contain commas."));
+        assertTrue(output.contains("Please enter a director name without commas."));
         assertTrue(manager.getMediaList().isEmpty());
         assertFalse(Files.exists(tempDir.resolve("MovieDVD-TST002.txt")));
     }
@@ -849,7 +848,286 @@ class ManagerTest {
         String output = capture(() ->
                 manager.listMedia(scanner("9")));
 
-        assertTrue(output.contains("Invalid type selection."));
+        assertTrue(output.contains("Please select a media type from the menu."));
+    }
+
+
+    /**
+     * Verifies a future release year is rejected rather than being stored.
+     */
+    @Test
+    void addMedia_futureYear_rejectsAddition(@TempDir Path tempDir)
+            throws IOException {
+
+        Manager manager = new Manager();
+        manager.loadMedia(tempDir.toString());
+
+        int futureYear = java.time.Year.now().getValue() + 1;
+
+        String output = capture(() -> manager.addMedia(scanner(
+                "1",
+                "BOOK01",
+                "Future Book",
+                "Test Author",
+                Integer.toString(futureYear))));
+
+        assertTrue(output.contains(
+                "Please enter a valid release year between 1000 and "
+                        + java.time.Year.now().getValue() + "."));
+        assertTrue(manager.getMediaList().isEmpty());
+        assertFalse(Files.exists(tempDir.resolve("eBook-BOOK01.txt")));
+    }
+
+    /**
+     * Verifies successful additions display the normalized media that was
+     * actually stored.
+     */
+    @Test
+    void addMedia_success_displaysNormalizedMedia(@TempDir Path tempDir)
+            throws IOException {
+
+        Manager manager = new Manager();
+        manager.loadMedia(tempDir.toString());
+
+        String output = capture(() -> manager.addMedia(scanner(
+                "1",
+                "tst001",
+                "  testing   java  ",
+                "  james   stevens  ",
+                "2025")));
+
+        assertTrue(output.contains("Media Added:"));
+        assertTrue(output.contains("ID: TST001"));
+        assertTrue(output.contains("Title: Testing Java"));
+        assertTrue(output.contains("Author: James Stevens"));
+        assertTrue(output.contains("Year: 2025"));
+        assertTrue(output.contains("Available: Yes"));
+        assertFalse(output.contains("File stored successfully."));
+    }
+
+    /**
+     * Verifies blank titles receive a specific user-facing validation message.
+     */
+    @Test
+    void addMedia_blankTitle_reportsFriendlyMessage(@TempDir Path tempDir)
+            throws IOException {
+
+        Manager manager = new Manager();
+        manager.loadMedia(tempDir.toString());
+
+        String output = capture(() ->
+                manager.addMedia(scanner("1", "BOOK01", "   ")));
+
+        assertTrue(output.contains("Please enter a title."));
+        assertTrue(manager.getMediaList().isEmpty());
+    }
+
+    /**
+     * Verifies blank creator names receive a specific user-facing message.
+     */
+    @Test
+    void addMedia_blankCreator_reportsFriendlyMessage(@TempDir Path tempDir)
+            throws IOException {
+
+        Manager manager = new Manager();
+        manager.loadMedia(tempDir.toString());
+
+        String output = capture(() -> manager.addMedia(scanner(
+                "1", "BOOK01", "Test Book", "   ")));
+
+        assertTrue(output.contains("Please enter an author name."));
+        assertTrue(manager.getMediaList().isEmpty());
+    }
+
+    /**
+     * Verifies blank movie directors receive a specific validation message.
+     */
+    @Test
+    void addMedia_blankDirector_reportsFriendlyMessage(@TempDir Path tempDir)
+            throws IOException {
+
+        Manager manager = new Manager();
+        manager.loadMedia(tempDir.toString());
+
+        String output = capture(() -> manager.addMedia(scanner(
+                "2",
+                "MOV001",
+                "Test Movie",
+                "Test Actor",
+                "2024",
+                "   ")));
+
+        assertTrue(output.contains("Please enter a director name."));
+        assertTrue(manager.getMediaList().isEmpty());
+    }
+
+    /**
+     * Verifies a blank rental ID is handled separately from an unknown ID.
+     */
+    @Test
+    void rentMedia_blankId_reportsFriendlyMessage(@TempDir Path tempDir)
+            throws IOException {
+
+        writeMusic(tempDir, "MUSIC1", true);
+
+        Manager manager = new Manager();
+        manager.loadMedia(tempDir.toString());
+
+        String output = capture(() -> manager.rentMedia(scanner("   ")));
+
+        assertTrue(output.contains("Please enter a media item ID."));
+        assertFalse(output.contains("No media item found with ID:"));
+        assertTrue(find(manager, "MUSIC1").getIsAvail());
+    }
+
+    /**
+     * Verifies a successful rental uses the structured media display and
+     * reports the rental fee without exposing persistence details.
+     */
+    @Test
+    void rentMedia_success_displaysStructuredResult(@TempDir Path tempDir)
+            throws IOException {
+
+        writeMusic(tempDir, "MUSIC1", true);
+
+        Manager manager = new Manager();
+        manager.loadMedia(tempDir.toString());
+
+        String output = capture(() ->
+                manager.rentMedia(scanner("music1", "1")));
+
+        assertTrue(output.contains("Item Rented:"));
+        assertTrue(output.contains("Music (CD)"));
+        assertTrue(output.contains("ID: MUSIC1"));
+        assertTrue(output.contains("Title: Test Album"));
+        assertTrue(output.contains("Performer: Test Artist"));
+        assertTrue(output.contains("Available: No"));
+        assertTrue(output.contains("Rental fee: $6.99"));
+        assertFalse(output.contains("File stored successfully."));
+    }
+
+    /**
+     * Verifies a blank return ID is handled separately from an unknown ID.
+     */
+    @Test
+    void returnMedia_blankId_reportsFriendlyMessage(@TempDir Path tempDir)
+            throws IOException {
+
+        writeMusic(tempDir, "MUSIC1", false);
+
+        Manager manager = new Manager();
+        manager.loadMedia(tempDir.toString());
+
+        String output = capture(() -> manager.returnMedia(scanner("   ")));
+
+        assertTrue(output.contains("Please enter a media item ID."));
+        assertFalse(output.contains("No media item found with ID:"));
+        assertFalse(find(manager, "MUSIC1").getIsAvail());
+    }
+
+    /**
+     * Verifies a successful return uses the structured media display without
+     * exposing persistence implementation details.
+     */
+    @Test
+    void returnMedia_success_displaysStructuredResult(@TempDir Path tempDir)
+            throws IOException {
+
+        writeMusic(tempDir, "MUSIC1", false);
+
+        Manager manager = new Manager();
+        manager.loadMedia(tempDir.toString());
+
+        String output = capture(() ->
+                manager.returnMedia(scanner("music1", "1")));
+
+        assertTrue(output.contains("Item Returned:"));
+        assertTrue(output.contains("Music (CD)"));
+        assertTrue(output.contains("ID: MUSIC1"));
+        assertTrue(output.contains("Title: Test Album"));
+        assertTrue(output.contains("Performer: Test Artist"));
+        assertTrue(output.contains("Available: Yes"));
+        assertFalse(output.contains("Rental fee:"));
+        assertFalse(output.contains("File stored successfully."));
+    }
+
+    /**
+     * Verifies browsing reports the result count and structured media fields.
+     */
+    @Test
+    void listMedia_results_displayCountAndStructuredFields(
+            @TempDir Path tempDir) throws IOException {
+
+        writeMusic(tempDir, "MUSIC1", true);
+
+        Manager manager = new Manager();
+        manager.loadMedia(tempDir.toString());
+
+        String output = capture(() ->
+                manager.listMedia(scanner("4", "1", "1", "1")));
+
+        assertTrue(output.contains("1 Music CD Found"));
+        assertTrue(output.contains("Music (CD)"));
+        assertTrue(output.contains("ID: MUSIC1"));
+        assertTrue(output.contains("Performer: Test Artist"));
+        assertTrue(output.contains("Available: Yes"));
+    }
+
+    /**
+     * Verifies invalid availability filtering receives a friendly message.
+     */
+    @Test
+    void listMedia_invalidAvailability_reportsError(@TempDir Path tempDir)
+            throws IOException {
+
+        writeMusic(tempDir, "MUSIC1", true);
+
+        Manager manager = new Manager();
+        manager.loadMedia(tempDir.toString());
+
+        String output = capture(() ->
+                manager.listMedia(scanner("1", "9")));
+
+        assertTrue(output.contains(
+                "Please select an availability option from the menu."));
+    }
+
+    /**
+     * Verifies invalid sort-field input receives a friendly message.
+     */
+    @Test
+    void listMedia_invalidSort_reportsError(@TempDir Path tempDir)
+            throws IOException {
+
+        writeMusic(tempDir, "MUSIC1", true);
+
+        Manager manager = new Manager();
+        manager.loadMedia(tempDir.toString());
+
+        String output = capture(() ->
+                manager.listMedia(scanner("1", "1", "9")));
+
+        assertTrue(output.contains(
+                "Please select a sort option from the menu."));
+    }
+
+    /**
+     * Verifies invalid sort-direction input receives a friendly message.
+     */
+    @Test
+    void listMedia_invalidDirection_reportsError(@TempDir Path tempDir)
+            throws IOException {
+
+        writeMusic(tempDir, "MUSIC1", true);
+
+        Manager manager = new Manager();
+        manager.loadMedia(tempDir.toString());
+
+        String output = capture(() ->
+                manager.listMedia(scanner("1", "1", "1", "9")));
+
+        assertTrue(output.contains(
+                "Please select a sort direction from the menu."));
     }
 
     /**
