@@ -1,2 +1,1 @@
-2009ib, Inglourious Basterds, Brad Pitt, 2009, Quentin, Tarantino, true
-
+2009ib, Inglourious Basterds, Brad Pitt, 2009, Quentin Tarantino, true
